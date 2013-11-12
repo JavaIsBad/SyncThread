@@ -11,6 +11,9 @@
 #include <signal.h>
 #include "exo1.h"
 
+#define VRAI 0==0
+#define FAUX !VRAI
+
 #define taillebuff 10
 
 struct nblu_somme{
@@ -19,8 +22,9 @@ struct nblu_somme{
 };
 
 long int buff[taillebuff];
-int fini=0;
-sem_t lecture, ecriture;
+unsigned int debutBuff, finBuff;
+int fini=FAUX;
+sem_t lecture, ecriture, AccesDenied;
 
 int randouze(unsigned int *seed){
     return (int) ((((float)rand_r(seed))/RAND_MAX)*255);
@@ -32,6 +36,7 @@ static inline void erreur(const char* err){
 }
 
 void *producteur(void *arg){
+	int ajout;
     struct nblu_somme *lu;
     lu=(struct nblu_somme*) malloc(sizeof(struct nblu_somme));
     if(lu==NULL)
@@ -40,34 +45,58 @@ void *producteur(void *arg){
     pthread_barrier_wait(startingBlock);
     int seed=(unsigned int) pthread_self();
     while(!fini){
-        ajoutbuff(randouze(&seed));
+		ajout=randouze(&seed);
+        ajoutbuff(ajout);
+		lu->total+=ajout;
+		lu->nblu+=1;
     }
     return lu;
 }
 
 void *consommateur(void *arg){
+	int nblu;
     struct nblu_somme *lu;
     lu=(struct nblu_somme*) malloc(sizeof(struct nblu_somme));
     if(lu==NULL)
         erreur("malloc");
     pthread_barrier_t *startingBlock= (pthread_barrier_t*) arg;
     pthread_barrier_wait(startingBlock);
-
-    /// todo
-
+    while(1){
+		nblu=retirerbuff();
+		if(nblu==-1){
+			break;
+		}
+		lu->nblu++;
+		lu->total+=nblu;
+	}
     return lu;
 }
 
 void ctrlC(int signum){
-    fini=1;
+    fini=VRAI;
 }
 
 void ajoutbuff(int nbr){
-    /// todo
+	sem_wait(&ecriture);
+    sem_wait(&AccesDenied);
+	buff[finBuff]=nbr;
+	finBuff=(finBuff+1)%taillebuff;
+	sem_post(&lecture);
+	sem_post(&AccesDenied);
 }
 
 int retirerbuff(){
-    /// todo
+	int nbr;
+	sem_wait(&lecture);
+    sem_wait(&AccesDenied);
+	nbr=buff[debutBuff];
+	if(nbr!=-1)
+		debutBuff=(debutBuff+1)%taillebuff;
+	else
+		sem_post(&lecture);
+	sem_post(&ecriture);
+	sem_post(&AccesDenied);
+	return nbr;
 }
 
 void setHandler(void (*handler)(int)){
@@ -91,6 +120,7 @@ int main (int argc, char ** argv){
     struct nblu_somme *lu;
     pthread_t *prod, *conso;
     pthread_barrier_t startingBlock;
+    sem_init(&AccesDenied, 0, 1);
 
     setHandler(ctrlC);
 
@@ -100,6 +130,9 @@ int main (int argc, char ** argv){
     }
     nbprod=atoi(argv[1]);
     nbconso=atoi(argv[2]);
+
+	sem_init(&lecture, 0, 0);
+	sem_init(&ecriture, 0, taillebuff);
 
     retourFonction=pthread_barrier_init(&startingBlock, NULL, 1+nbprod+nbconso);
     if(retourFonction!=0)
@@ -133,7 +166,6 @@ int main (int argc, char ** argv){
 
     for(i=0; i<nbprod; i++){
         retourFonction=pthread_join(prod[i], (void**) &lu);
-        printf("retour tuture\n");
         if(retourFonction!=0)
             erreur("pthread_join");
         prodAproduit+=lu->nblu;
@@ -141,6 +173,7 @@ int main (int argc, char ** argv){
         free(lu);
     }
 
+	printf("\nFin prod\n");
     free(prod);
 
     ajoutbuff(-1);
@@ -154,12 +187,13 @@ int main (int argc, char ** argv){
         free(lu);
     }
 
+	printf("Fin conso\n");
     free(conso);
-
+    
     printf("Les %d producteurs ont produit %d\
-            valeurs pour une somme de %ld.\n\
-            Les %d consommateurs ont consommés %d\
-            valeurs pour une somme de %ld.\n",
+ valeurs pour une somme de %ld.\n\
+Les %d consommateurs ont consommés %d\
+ valeurs pour une somme de %ld.\n",
             nbprod, prodAproduit, sommeProd,
             nbconso, consoAmanger, sommeMiam);
 
