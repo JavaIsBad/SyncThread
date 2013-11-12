@@ -24,7 +24,7 @@ struct nblu_somme{
 long int buff[taillebuff];
 unsigned int debutBuff, finBuff;
 int fini=FAUX;
-sem_t lecture, ecriture, AccesDenied;
+sem_t lecture, ecriture, AccesDenied, AccesDenied2;
 
 int randouze(unsigned int *seed){
     return (int) ((((float)rand_r(seed))/RAND_MAX)*255);
@@ -77,25 +77,27 @@ void ctrlC(int signum){
 }
 
 void ajoutbuff(int nbr){
+	int fin;
 	sem_wait(&ecriture);
     sem_wait(&AccesDenied);
-	buff[finBuff]=nbr;
-	finBuff=(finBuff+1)%taillebuff;
+    fin=finBuff;
+    finBuff=(finBuff+1)%taillebuff;
+    buff[fin]=nbr;
+    sem_post(&AccesDenied);
 	sem_post(&lecture);
-	sem_post(&AccesDenied);
 }
 
 int retirerbuff(){
 	int nbr;
 	sem_wait(&lecture);
-    sem_wait(&AccesDenied);
+    sem_wait(&AccesDenied2);
 	nbr=buff[debutBuff];
 	if(nbr!=-1)
 		debutBuff=(debutBuff+1)%taillebuff;
 	else
 		sem_post(&lecture);
+	sem_post(&AccesDenied2);
 	sem_post(&ecriture);
-	sem_post(&AccesDenied);
 	return nbr;
 }
 
@@ -120,7 +122,6 @@ int main (int argc, char ** argv){
     struct nblu_somme *lu;
     pthread_t *prod, *conso;
     pthread_barrier_t startingBlock;
-    sem_init(&AccesDenied, 0, 1);
 
     setHandler(ctrlC);
 
@@ -131,6 +132,8 @@ int main (int argc, char ** argv){
     nbprod=atoi(argv[1]);
     nbconso=atoi(argv[2]);
 
+    sem_init(&AccesDenied, 0, 1);
+    sem_init(&AccesDenied2, 0, 1);
 	sem_init(&lecture, 0, 0);
 	sem_init(&ecriture, 0, taillebuff);
 
