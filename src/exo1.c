@@ -81,9 +81,8 @@ void ajoutbuff(int nbr){
     int fin;
     sem_wait(&ecriture);
     sem_wait(&AccesDenied);
-    fin=finBuff;
+    buff[finBuff]=nbr;
     finBuff=(finBuff+1)%taillebuff;
-    buff[fin]=nbr;
     sem_post(&AccesDenied);
     sem_post(&lecture);
 }
