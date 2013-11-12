@@ -42,7 +42,7 @@ void *producteur(void *arg){
     lu=(struct nblu_somme*) malloc(sizeof(struct nblu_somme));
     if(lu==NULL)
         erreur("malloc");
-    int seed=(unsigned int) pthread_self();
+    unsigned int seed=(unsigned int) pthread_self();
     lu->nblu=0;
     lu->total=0;
     while(!fini){
@@ -78,7 +78,6 @@ void ctrlC(int signum){
 }
 
 void ajoutbuff(int nbr){
-    int fin;
     sem_wait(&ecriture);
     sem_wait(&AccesDenied);
     buff[finBuff]=nbr;
