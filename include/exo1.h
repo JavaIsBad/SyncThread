@@ -91,4 +91,4 @@ int setHandler(void (*handler)(int), int signum);
 
 int main(int argc, char **argv);
 
-#endif // _ EXO_1_H
+#endif // __EXO1_H

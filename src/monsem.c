@@ -1,5 +1,9 @@
+/**
+ * \file monsem.c <source code>
+ * \author Raphaël SCHIMCHOWITSCH, Maxime SCHMITT
+ */
+
 #include <pthread.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include "monsem.h"
 
