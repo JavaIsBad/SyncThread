@@ -1,5 +1,6 @@
 /**
- * TP4 - Exercice 2 <Code source>
+ * \file exo2.c
+ * TP4 - Exercice 2 Code source
  * \author SCHMITT Maxime, SCHIMCHOWITSCH Raphaël
  */
 

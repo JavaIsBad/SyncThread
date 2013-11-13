@@ -1,5 +1,6 @@
 /**
- * TP4 - Exercice 1 <Header>
+ * \file exo1.h
+ * TP4 - Exercice 1 Header
  * \author SCHMITT Maxime, SCHIMCHOWITSCH Raphaël
  */
 #ifndef __EXO_1_H
@@ -11,8 +12,8 @@
  */
 
 struct nblu_somme{
-    unsigned int nblu;          //<- Le nombre de valeurs lue dans un thread
-    unsigned long int total;    //<- La somme de toutes les valeurs lues
+    unsigned int nblu;          //!< Le nombre de valeurs lue dans un thread
+    unsigned long int total;    //!< La somme de toutes les valeurs lues
 };
 
 /**
@@ -46,7 +47,7 @@ void *consommateur(void *arg);
 
 /**
  * \brief La fonction qui sera appele en pressant ^C
- * \prarm signum Non utilise (faites vous plaisire)
+ * \param signum Non utilise (faites vous plaisire)
  */
 
 void ctrlC(int signum);

@@ -22,12 +22,15 @@ monsem.o : monsem.c monsem.h
 	gcc $(CFLAGS) -c $< $(IFLAGS)
 	mv $@ $(OPATH)
 	
-obj : 
+obj :
 	mkdir obj
 
-bin : 
+bin :
 	mkdir bin
 
-clean : 
-	rm obj/* bin/*
+clean :
+	rm -r obj/ bin/ doc/
+
+doc :
+	@doxygen
 

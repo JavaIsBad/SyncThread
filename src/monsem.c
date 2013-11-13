@@ -1,5 +1,5 @@
 /**
- * \file monsem.c <source code>
+ * \file monsem.c source code
  * \author Raphaël SCHIMCHOWITSCH, Maxime SCHMITT
  */
 
@@ -8,30 +8,30 @@
 #include "monsem.h"
 
 
-int monsem_init(monsem_t * monstr, unsigned const int val){
+int monsem_init(monsem_t * sem, unsigned const int value){
     int retfun;
-    monstr->nbinto=val;
-    retfun=pthread_cond_init(&monstr->iment, NULL);
+    sem->nbinto=value;
+    retfun=pthread_cond_init(&sem->iment, NULL);
     if(retfun==0){
-        retfun=pthread_mutex_init(&monstr->texpaf, NULL);
+        retfun=pthread_mutex_init(&sem->texpaf, NULL);
     }
     if(retfun!=0)
-        monstr->usable = INIT_USABLE_FALSE;
+        sem->usable = INIT_USABLE_FALSE;
     else
-        monstr->usable = INIT_USABLE_TRUE;
+        sem->usable = INIT_USABLE_TRUE;
     return retfun;
 }
 
-int monsem_wait(monsem_t *monstr){
+int monsem_wait(monsem_t *sem){
     int retfun;
-    if( monstr->usable == INIT_USABLE_TRUE ){
-        retfun=pthread_mutex_lock(&monstr->texpaf);
-        while(monstr->nbinto==0 && retfun==0){
-            retfun=pthread_cond_wait(&monstr->iment, &monstr->texpaf);
+    if( sem->usable == INIT_USABLE_TRUE ){
+        retfun=pthread_mutex_lock(&sem->texpaf);
+        while(sem->nbinto==0 && retfun==0){
+            retfun=pthread_cond_wait(&sem->iment, &sem->texpaf);
         }
         if(retfun==0){
-            monstr->nbinto--;
-            retfun=pthread_mutex_unlock(&monstr->texpaf);
+            sem->nbinto--;
+            retfun=pthread_mutex_unlock(&sem->texpaf);
         }
     }
     else{
@@ -41,20 +41,20 @@ int monsem_wait(monsem_t *monstr){
     return retfun;
 }
 
-int monsem_post(monsem_t *monstr){
+int monsem_post(monsem_t *sem){
     int retfun;
-    if( monstr->usable == INIT_USABLE_TRUE ){
-        retfun=pthread_mutex_lock(&monstr->texpaf);
+    if( sem->usable == INIT_USABLE_TRUE ){
+        retfun=pthread_mutex_lock(&sem->texpaf);
         if(retfun==0){
-            if(monstr->nbinto == MONSEM_VALUE_MAX){
+            if(sem->nbinto == MONSEM_VALUE_MAX){
                 retfun=-1;
                 errno=EOVERFLOW;
             }
             else{
-                monstr->nbinto++;
-                retfun=pthread_cond_signal(&monstr->iment);
+                sem->nbinto++;
+                retfun=pthread_cond_signal(&sem->iment);
                 if(retfun==0)
-                    retfun=pthread_mutex_unlock(&monstr->texpaf);
+                    retfun=pthread_mutex_unlock(&sem->texpaf);
             }
         }
     }
@@ -65,26 +65,26 @@ int monsem_post(monsem_t *monstr){
     return retfun;
 }
 
-int monsem_getvalue(monsem_t *monstr, int *value){
+int monsem_getvalue(monsem_t *sem, int *value){
     int retval;
-    if( monstr->usable == INIT_USABLE_TRUE ){
-        *value=monstr->nbinto;
+    if( sem->usable == INIT_USABLE_TRUE ){
+        *value=sem->nbinto;
         retval=0;
     }
     else{
         retval=-1;
         errno=EINVAL;
     }
-    return 0;
+    return retval;
 }
 
-int monsem_destroy(monsem_t *monstr){
+int monsem_destroy(monsem_t *sem){
     int retval;
-    if (monstr->usable == INIT_USABLE_TRUE){
-        monstr->usable = INIT_USABLE_FALSE;
-        retval=pthread_cond_destroy(&monstr->iment);
+    if (sem->usable == INIT_USABLE_TRUE){
+        sem->usable = INIT_USABLE_FALSE;
+        retval=pthread_cond_destroy(&sem->iment);
         if(retval == 0)
-            retval=pthread_mutex_destroy(&monstr->texpaf);
+            retval=pthread_mutex_destroy(&sem->texpaf);
     }
     else{
         retval=-1;

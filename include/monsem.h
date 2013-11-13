@@ -1,3 +1,9 @@
+
+/**
+ * \file monsem.h
+ * \author Maxime SCHMITT, Raphaël SCHIMCHOWITSCH
+ */
+
 #ifndef __EXO2_H
 #define __EXO2_H
 
@@ -5,21 +11,33 @@
 #include <limits.h>
 #include <errno.h>
 
+/**
+ * \brief Sert au test lors d'un increment
+ */
 #define MONSEM_VALUE_MAX UINT_MAX
+/**
+ * \brief Sert a rien
+ */
 #define MONSEM_FAILED ((monsem_t *) 0)
+/**
+ * \brief Sert a initialiser lors de la creation
+ */
 #define INIT_USABLE_TRUE 1
+/**
+ * \brief Sert a rendre la semaphore inutilisable
+ */
 #define INIT_USABLE_FALSE 0
 
 /**
- * \typedef monsem_t
+ * \struct monsem_t
  * \brief Une structure permetant de faire une semaphore personnalisee
  */
 
 typedef struct{
-    pthread_mutex_t texpaf; //<- Le mutex servant a l'acces
-    unsigned int nbinto;    //<- La valeur de la semaphore
-    char usable;            //<- Variable servant au test d'utilisation
-    pthread_cond_t iment;   //<- Condition pour liberer un thread si la semaphore est bloquante
+    pthread_mutex_t texpaf; //!< Le mutex servant a l'acces
+    unsigned int nbinto;    //!< La valeur de la semaphore
+    char usable;            //!< Variable servant au test d'utilisation
+    pthread_cond_t iment;   //!< Condition pour liberer un thread si la semaphore est bloquante
 }
 monsem_t;
 
@@ -39,7 +57,7 @@ static const monsem_t MONSEM_INITIALIZER={ PTHREAD_MUTEX_INITIALIZER, 1u, INIT_U
  * voir les erreurs dans le man de pthread_cond_init et pthread_mutex_init
  */
 
-int monsem_init(monsem_t * sem, unsigned int value);
+int monsem_init(monsem_t * sem, unsigned const int value);
 
 /**
  * \brief Decremente la semaphore et attend passivement si elle est bloquante
@@ -67,7 +85,7 @@ int monsem_post(monsem_t *sem);
 /**
  * \brief Retourne la valeure de la semaphore
  * \param sem La semaphore dont il faut retourner la valeur
- * \prarm value Un pointeur vers un entier dans lequel la valeur sera sauvegardee
+ * \param value Un pointeur vers un entier dans lequel la valeur sera sauvegardee
  * \return 0 si succes, autre chose sinon
  * Errno est positionne le cas echeant
  * EINVAL est positionne si la semaphore n'est pas valide
@@ -77,7 +95,7 @@ int monsem_getvalue(monsem_t *sem, int *value);
 
 /**
  * \brief Detruit la semaphore. Si la semaphore est en utilisation le resultat peut etre exotique
- * \prarm sem La semaphre a detruire
+ * \param sem La semaphre a detruire
  * \return 0 si succes, autre chose sinon
  * Errno est positionne le cas echeant
  * EINVAL est positionne si la semaphore n'est pas valide
