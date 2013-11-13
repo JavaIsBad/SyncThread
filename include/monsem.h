@@ -45,7 +45,6 @@ int monsem_init(monsem_t * sem, unsigned int value);
  * \brief Decremente la semaphore et attend passivement si elle est bloquante
  * \param sem Une semaphore initialisee
  * \return 0 si succes, autre chose si erreur
- *
  * Errno est positionne le cas echeant
  * voir les erreurs dans le man de pthread_cond_wait et pthread_mutex_unlock/lock
  * EINVAL est positionne si la semaphore n'est pas valide
@@ -53,8 +52,38 @@ int monsem_init(monsem_t * sem, unsigned int value);
 
 int monsem_wait(monsem_t *sem);
 
+/**
+ * \brief Incremente la semaphore
+ * \param sem Une semaphore
+ * \return 0 si succes, autre chose sinon
+ * Errno est positionne le cas echeant
+ * voir les erreurs dans le man de pthread_cond_signal et pthread_mutex_unlock/lock
+ * EOVERFLOW est positionne si la semaphore est deja a sa valeur maximmale
+ * EINVAL est positionne si la semaphore n'est pas valide
+ */
+
 int monsem_post(monsem_t *sem);
+
+/**
+ * \brief Retourne la valeure de la semaphore
+ * \param sem La semaphore dont il faut retourner la valeur
+ * \prarm value Un pointeur vers un entier dans lequel la valeur sera sauvegardee
+ * \return 0 si succes, autre chose sinon
+ * Errno est positionne le cas echeant
+ * EINVAL est positionne si la semaphore n'est pas valide
+ */
+
 int monsem_getvalue(monsem_t *sem, int *value);
+
+/**
+ * \brief Detruit la semaphore. Si la semaphore est en utilisation le resultat peut etre exotique
+ * \prarm sem La semaphre a detruire
+ * \return 0 si succes, autre chose sinon
+ * Errno est positionne le cas echeant
+ * EINVAL est positionne si la semaphore n'est pas valide
+ * Voir le man pthread_cond_destroy et pthread_mutex_destroy pour les autres erreurs
+ */
+
 int monsem_destroy(monsem_t *sem);
 
 #endif //__EXO2_H

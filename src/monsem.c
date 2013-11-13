@@ -59,7 +59,7 @@ int monsem_post(monsem_t *monstr){
         }
     }
     else{
-        retfun=1;
+        retfun=-1;
         errno=EINVAL;
     }
     return retfun;
