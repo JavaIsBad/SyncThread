@@ -75,6 +75,7 @@ int monsem_getvalue(monsem_t *monstr, int *value){
         retval=-1;
         errno=EINVAL;
     }
+    return 0;
 }
 
 int monsem_destroy(monsem_t *monstr){
